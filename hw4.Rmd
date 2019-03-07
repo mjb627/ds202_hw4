@@ -1,0 +1,52 @@
+---
+title: "Michael Bardfield; mjb627"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#hw4
+```{r}
+library(datasets)
+library(dplyr)
+library(ggplot2)
+head(ChickWeight)
+
+#1. 
+weight0 <- ChickWeight %>% filter(Time == 0) %>% summarize(mean_weight = mean(weight), sd_weight = sd(weight))
+weight0
+
+#2.
+total_observations <- ChickWeight %>% group_by(Chick) %>% mutate(observations = n())
+complete <- total_observations %>% filter(observations == 12)
+head(complete, 3)
+
+#3.
+dat <- complete %>% group_by(Chick) %>% mutate(weight0 = weight[Time == 0])
+complete <- dat %>% mutate(weightgain = weight[Time == 21] - weight0)
+head(complete, 3)
+
+#4. From the graph we can see chicks gain the most weight on diet 3. Diet 1 shows the least weight gain and diet 2 has the greatest variation in weight gain. Diet 4 shows the second highest weight gain. 
+complete1 <- complete %>% filter(Time == 21)
+complete2 <- complete1 %>% group_by(median(weightgain))
+ggplot(complete2, aes(x=Diet, y=weightgain)) + geom_boxplot() + ylab("Weight Gain") + ylim(0,300)
+
+#5. We can see from the dataset and graph that chick 24 gained the least weight on diet 2 and chick 35 gained the most weight on diet 3.
+q5 <- complete1 %>% arrange(weightgain) %>% summarize(weightgained = max(weightgain), Diet = Diet)
+q5
+ggplot(complete1, aes(x=Chick, y=weightgain, color=Diet)) + geom_point() + coord_flip()
+
+#6. From q6 datset we can see chick 27 and 28 have some of the lowest starting weight and chick 19 and 23 have some of the highest starting weight. The higher starting weights end with higher final weights than the lower starting weights. From 0 to 5 days they have the same projectories. After 5 days chick 19 differs off the trajectory. After day 10 all of the growths change with the exception of chick 27 and 23 being the same weight around day 17.
+q6 <- complete %>% filter(Time == 0) %>% arrange(weight0)
+head(q6)
+tail(q6)
+ggplot(complete[complete$Chick == 27 | complete$Chick == 28 | complete$Chick == 19 | complete$Chick == 23,], aes(x=Time, y=weight, color=Chick)) + geom_line()
+
+#7. Taking chicks at random and plotting their growth shows differing final weights with all diets. This indicates that all chicks are different. They all gain/lose weights differently which could cause weird results in the dataset.
+ggplot(complete[complete$Chick == 2 | complete$Chick == 22 | complete$Chick == 32 | complete$Chick == 43 | complete$Chick == 7 | complete$Chick == 21 | complete$Chick == 31 | complete$Chick == 42,], aes(x=Time, y=weight, color=Chick)) + geom_line() + facet_wrap(~Diet)
+
+
+
+
+```
